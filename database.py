@@ -5,7 +5,7 @@ from datetime import datetime
 
 class Database():
     def __init__(self) -> None:
-        self.db = connect('cinema.db')
+        self.db = connect('cosmetics.db')
         self.cursor = self.db.cursor()
 
         self.counter = """
@@ -33,6 +33,7 @@ class Database():
                                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                                     id_user BIGINT,
                                     userName VARCHAR(255), 
+                                    fio VARCHAR(255),
                                     contact VARCHAR(255),
                                     city VARCHAR(255),
                                     dateRegister VARCHAR(255),
@@ -47,6 +48,7 @@ class Database():
                                     qr VARCHAR(255),
                                     who_paid VARCHAR(255),
                                     receipt VARCHAR(255),
+                                    fio VARCHAR(255),
                                     contact VARCHAR(255),
                                     city VARCHAR(255),
                                     dataPay VARCHAR(255)
@@ -142,7 +144,7 @@ class Database():
             print(e)
             return False    
         
-    def InsertLoto(self, id_user, id_loto, qr, who_paid, receipt, contact, city, dataPay) -> bool:
+    def InsertLoto(self, id_user, id_loto, qr, who_paid, receipt, fio, contact, city, dataPay) -> bool:
         try:
             insertLotoQuery = """INSERT INTO loto(
                                     id_user,
@@ -150,11 +152,12 @@ class Database():
                                     qr,
                                     who_paid,
                                     receipt,
+                                    fio,
                                     contact,
                                     city,
                                     dataPay
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"""
-            self.cursor.execute(insertLotoQuery, (id_user, id_loto, qr, who_paid, receipt, contact, city, dataPay))
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+            self.cursor.execute(insertLotoQuery, (id_user, id_loto, qr, who_paid, receipt, fio, contact, city, dataPay))
             self.db.commit()
             return True
         except Exception as e:
@@ -163,10 +166,12 @@ class Database():
 
     
     def CheckLoto(self, qr: str) -> bool:
+        print(qr)
         try:
             q = "SELECT COUNT(*) from loto WHERE  qr = ?"
             self.cursor.execute(q, (qr, ))
             count = self.cursor.fetchone()[0]
+            print(count)
             return count > 0
         except Exception as e:
             print(e)
@@ -183,23 +188,25 @@ class Database():
             return []
 
 
-    def InsertClient(self, id, userName, contact, city, dataR, dataP, check) -> bool:
+    def InsertClient(self, id, userName, fio, contact, city, dataR, dataP, check) -> bool:
         try:
             insertClientQuery = """INSERT INTO client(
                                     id_user,
                                     userName,
+                                    fio,
                                     contact,
                                     city,
                                     dateRegister,
                                     dataPay,
                                     checks
-                                ) VALUES (?, ?, ?, ?, ?, ?, ?)"""
-            self.cursor.execute(insertClientQuery, (id, userName, contact, city, dataR, dataP, check))
+                                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"""
+            self.cursor.execute(insertClientQuery, (id, userName, fio, contact, city, dataR, dataP, check))
             self.db.commit()
             return True
         except Exception as e:
             print(e)
             return False
+
 
         
     def InsertPaid(self, id, movId, dataPaid) -> bool:

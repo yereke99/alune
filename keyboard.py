@@ -31,9 +31,25 @@ class Button:
         
         return keyboard
     
+    def offertas(self):
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.add(types.InlineKeyboardButton("📃 Офферта", url="https://producerr.tilda.ws/oferta"))
+        keyboard.add(types.InlineKeyboardButton("📃 Оффертамен ✔️ таныстым", callback_data="accept"))
+        
+        return keyboard
+    
+    def linkTelega(self):
+        keyboard = types.InlineKeyboardMarkup()
+        keyboard.add(types.InlineKeyboardButton("Менеджер чат 🤖 бот", url="https://t.me/@earllp"))
+        
+        return keyboard
+
+    
     
     def menu(self):
         return self._create_keyboard([
+            "🧧 Ұтыс билеттерім",
+            "💋 Косметика сатып алу",
             "📨 Әкімшіге хабарлама",
             "📲 Байланыс номері",  
         ])
@@ -56,7 +72,7 @@ class Button:
     def menu_not_paid(self):
 
         return self._create_keyboard([
-            #"🎬 Киноны сатып алу",
+            "💋 Косметика сатып алу",
             "📨 Әкімшіге хабарлама",  
             "📲 Байланыс номері", 
         ])

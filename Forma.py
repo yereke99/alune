@@ -38,8 +38,9 @@ os.makedirs('./pdf/', exist_ok=True)
 class Forma(StatesGroup):
     s1 = State()  # Косметика саны
     s2 = State()  # Read PDF
-    s3 = State()  # Контакт
-    s4 = State()  # Қала
+    s3 = State()  # FIO
+    s4 = State()  # Контакт
+    s5 = State()  # Қала
 
 
 @dp.message_handler(state='*', commands='🔕 Бас тарту')
@@ -161,12 +162,7 @@ async def handler(message: types.Message, state: FSMContext):
             data['fileName'] = file_name
 
         print(data['pdf_result'])
-        if data['sum'] == 0:
-            async with state.proxy() as data:
-                data['count'] = data['pdf_result'][3] / 40000
-                sum = 1000 * data['count']
-                data['sum'] = sum
-
+        
         if convert_currency_to_int(data['pdf_result'][3]) != data['sum']: 
             await bot.send_message(
                 message.from_user.id,
@@ -181,6 +177,7 @@ async def handler(message: types.Message, state: FSMContext):
         print(data['pdf_result'][11])
        
         if data['pdf_result'][10] == "Сатушының ЖСН/БСН 040615601206" or data['pdf_result'][10] == "ИИН/БИН продавца 040615601206" or data['pdf_result'][10] == "Сатушының ЖСН/БСН 811103400721" or data['pdf_result'][10] == "ИИН/БИН продавца 811103400721":
+            print(db.CheckLoto(data['pdf_result'][6]))
             if db.CheckLoto(data['pdf_result'][6]) == True:
                 await bot.send_message(
                     message.from_user.id,
@@ -194,12 +191,13 @@ async def handler(message: types.Message, state: FSMContext):
             await Forma.next()
             await bot.send_message(
                 message.from_user.id,
-                text="*Сізбен кері 📲 байланысқа шығу үшін байланыс нөміріңізді қалдырыңыз! Төменде тұрған \n\n📱 Контактімен бөлісу кнопкасын басыныз\n\nЕШҚАШАН САНДАРМЕН ЖАЗБАЙМЫЗ ‼️*",
+                text="*Аты жөніңізді жазыңыз*",
                 parse_mode="Markdown",
-                reply_markup=btn.send_contact()
+                reply_markup=types.ReplyKeyboardRemove()
+
             )
             return
-        
+    
         await bot.send_message(
                 message.from_user.id,
                 text="*Дұрыс емес счетқа төледіңіз!\nҚайталап көріңіз*",
@@ -236,8 +234,25 @@ async def handler(message: types.Message, state: FSMContext):
                 reply_markup=btn.cancel()
             ) 
         
-        
-@dp.message_handler(state=Forma.s3, content_types=types.ContentType.CONTACT)
+
+@dp.message_handler(state=Forma.s3)
+async def handler(message: types.Message, state: FSMContext):
+    
+    async with state.proxy() as data:
+        data['fio'] = message.text
+    
+    await Forma.next()
+
+    await bot.send_message(
+        message.from_user.id,
+        text="*Сізбен кері 📲 байланысқа шығу үшін байланыс нөміріңізді қалдырыңыз! Төменде тұрған \n\n📱 Контактімен бөлісу кнопкасын басыныз\n\nЕШҚАШАН САНДАРМЕН ЖАЗБАЙМЫЗ ‼️*",
+        parse_mode="Markdown",
+        reply_markup=btn.send_contact()
+    )
+    
+    
+    
+@dp.message_handler(state=Forma.s4, content_types=types.ContentType.CONTACT)
 async def handler(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
@@ -258,25 +273,26 @@ async def handler(message: types.Message, state: FSMContext):
 
     
 
-@dp.message_handler(state=Forma.s4)
+@dp.message_handler(state=Forma.s5)
 async def handler(message: types.Message, state: FSMContext):
     
     async with state.proxy() as data:
         data['city'] = message.text
 
     
-    if db.InsertClient(message.from_user.id, message.from_user.username,  data['contact'], data['city'], datetime.now(), "paid", "true"):
+    if db.InsertClient(message.from_user.id, message.from_user.username,  data['fio'], data['contact'], data['city'], datetime.now(), "paid", "true"):
 
         time_now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        for i in range(data['count']):
+        for i in range(int(data['count'])):
             gen = generator.generate_random_int()
             db.InsertLoto(
                 message.from_user.id,
                 gen,
-                data['pdf_result'][3],
+                data['pdf_result'][6],
                 message.from_user.username,
                 data['fileName'],  
+                data['fio'],
                 data['contact'],
                 data['city'],
                 time_now,
