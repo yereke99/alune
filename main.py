@@ -53,12 +53,12 @@ async def pdf_received_handler(message: types.Message, state: FSMContext):
             data['data'] = message.text
             data['pdf_result'] = result
             data['fileName'] = file_name
-            data['count'] = convert_currency_to_int(result[3]) / 1000
+            # Убедитесь, что округление и деление выполнены корректно
+            data['count'] = int(convert_currency_to_int(result[3]) / 1000)
             sum = 1000 * data['count']
             data['sum'] = sum
 
-        print(data['pdf_result'])
-
+        print(f"Expected sum: {data['sum']}, Actual sum: {convert_currency_to_int(data['pdf_result'][3])}")
 
         if convert_currency_to_int(data['pdf_result'][3]) != data['sum']: 
             await bot.send_message(
@@ -68,6 +68,7 @@ async def pdf_received_handler(message: types.Message, state: FSMContext):
                 reply_markup=btn.menu()
             ) 
             return
+
         
         print(data['pdf_result'][3])
         print(data['pdf_result'][11])
